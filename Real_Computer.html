@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房仲萬用計算機 (整數萬元版)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .calculator {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        /* 全域設定 */
+        .global-setting {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .global-setting label { color: #ddd; font-size: 0.9rem; }
+        .global-setting input { 
+            background: #555; border: none; color: white; text-align: center; 
+        }
+
+        /* 區塊通用 */
+        .section-box {
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 顏色主題 */
+        .goal-section { border-color: #bbdefb; background-color: #e3f2fd; }
+        .goal-title { color: #0d47a1; }
+        
+        .deal-section { border-color: #c8e6c9; background-color: #e8f5e9; }
+        .deal-title { color: #2e7d32; }
+
+        /* 輸入框 */
+        .input-group {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 18px;
+            box-sizing: border-box; 
+        }
+        .unit-tag {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-weight: bold;
+        }
+
+        /* 按鈕群組 */
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        button {
+            flex: 1;
+            padding: 12px 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        
+        /* 按鈕顏色 */
+        .btn-goal-full { background-color: #1565c0; }
+        .btn-goal-half { background-color: #42a5f5; }
+        .btn-goal-quarter { background-color: #90caf9; color: #000; }
+
+        .btn-deal-full { background-color: #2e7d32; }
+        .btn-deal-half { background-color: #f9a825; }
+        .btn-deal-quarter { background-color: #d84315; }
+        
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* 結果顯示 */
+        .result-display {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: none;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .big-text {
+            font-size: 1.4rem; /* 字體加大一點點 */
+            font-weight: bold;
+            font-family: monospace; 
+        }
+        
+        .total-sales-row {
+            background: rgba(255,255,255,0.5);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 5px;
+        }
+
+        .extra-info {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>🏆 房仲萬用計算機</h2>
+    
+    <div class="global-setting input-group">
+        <label>您的取成比例 (%)</label>
+        <input type="number" id="split" placeholder="50" value="50">
+        <span class="unit-tag" style="color: #bbb;">%</span>
+    </div>
+
+    <div class="section-box goal-section">
+        <div class="section-title goal-title">🚀 年度目標規劃</div>
+        <div class="input-group">
+            <input type="number" id="yearGoal" placeholder="今年想實拿多少錢？">
+            <span class="unit-tag">萬元</span>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-goal-full" onclick="calcGoal(0.06)">全蛋 6%</button>
+            <button class="btn-goal-half" onclick="calcGoal(0.03)">半蛋 3%</button>
+            <button class="btn-goal-quarter" onclick="calcGoal(0.015)">1.5%</button>
+        </div>
+
+        <div class="result-display" id="goalResult">
+            <div class="result-row">
+                <span>需達成總業績：</span>
+                <span class="big-text" id="reqPerformance">0</span>
+            </div>
+            <div class="result-row total-sales-row">
+                <span>需成交房價總額：</span>
+                <span class="big-text" style="color:#0d47a1;" id="reqTotalSales">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-box deal-section">
+        <div class="section-title deal-title">🏠 單筆成交試算</div>
+        <div class="input-group">
+            <input type="number" id="price" placeholder="成交價 / 開價">
+            <span class="unit-tag">萬元</span>
+        </div>
+        <div class="btn-group">
+            <button class="btn-deal-full" onclick="calcDeal(0.06)">全蛋 6%</button>
+            <button class="btn-deal-half" onclick="calcDeal(0.03)">半蛋 3%</button>
+            <button class="btn-deal-quarter" onclick="calcDeal(0.015)">1.5%</button>
+        </div>
+
+        <div class="result-display" id="dealResult">
+            <div class="result-row">
+                <span>此案總服務費：</span>
+                <span id="dealComm">0</span>
+            </div>
+            <div class="result-row" style="color:#d32f2f;">
+                <span>此案個人實收：</span>
+                <span class="big-text" id="dealNet">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="extra-info" id="combineInfo">
+        達成目標需要賣此類案件<br>
+        <span style="font-size: 1.4rem; font-weight:bold;" id="housesCount">0</span> 間
+    </div>
+
+</div>
+
+<script>
+    // 格式化工具：輸入元 -> 轉成萬元 -> 四捨五入取整數 -> 加逗號
+    function formatWanInt(num) {
+        // 除以 10000 換算成萬
+        var wan = num / 10000;
+        
+        // Math.round 四捨五入取整數 (去掉小數點)
+        var integerWan = Math.round(wan);
+        
+        // toLocaleString 加上三位一撇
+        return integerWan.toLocaleString() + " 萬元";
+    }
+
+    // 計算目標
+    function calcGoal(rate) {
+        var split = parseFloat(document.getElementById('split').value);
+        var yearGoalWan = parseFloat(document.getElementById('yearGoal').value);
+
+        if(isNaN(split)) { alert("請輸入取成比例"); return; }
+        if(isNaN(yearGoalWan)) { alert("請輸入目標金額"); return; }
+
+        var goal = yearGoalWan * 10000;
+        
+        // 1. 需達成總業績
+        var reqPerf = goal / (split / 100);
+
+        // 2. 需成交總房價
+        var reqSales = reqPerf / rate;
+
+        document.getElementById('reqPerformance').innerText = formatWanInt(reqPerf);
+        document.getElementById('reqTotalSales').innerText = formatWanInt(reqSales);
+        
+        document.getElementById('goalResult').style.display = 'block';
+        
+        checkCombine(); 
+    }
+
+    // 計算單筆
+    function calcDeal(rate) {
+        var split = parseFloat(document.getElementById('split').value);
+        var priceWan = parseFloat(document.getElementById('price').value);
+
+        if(isNaN(split)) { alert("請輸入取成比例"); return; }
+        if(isNaN(priceWan)) { alert("請輸入房價"); return; }
+
+        var price = priceWan * 10000;
+        var comm = price * rate;
+        var net = comm * (split / 100);
+
+        document.getElementById('dealComm').innerText = formatWanInt(comm);
+        document.getElementById('dealNet').innerText = formatWanInt(net);
+        document.getElementById('dealResult').style.display = 'block';
+
+        document.getElementById('dealNet').setAttribute('data-value', net);
+
+        checkCombine(); 
+    }
+
+    // 檢查連動
+    function checkCombine() {
+        var yearGoalWan = parseFloat(document.getElementById('yearGoal').value);
+        var dealNet = parseFloat(document.getElementById('dealNet').getAttribute('data-value'));
+
+        if (!isNaN(yearGoalWan) && !isNaN(dealNet) && dealNet > 0) {
+            var goal = yearGoalWan * 10000;
+            var count = goal / dealNet;
+            document.getElementById('housesCount').innerText = count.toFixed(1);
+            document.getElementById('combineInfo').style.display = 'block';
+        } else {
+            document.getElementById('combineInfo').style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
